@@ -14,19 +14,37 @@ ads = ADS.ADS1115(i2c)
 
 # Create single-ended input on channel 0
 chan = AnalogIn(ads, ADS.P0)
-meetwaarden = [0]*500;
-
+chanstroom = AnalogIn(ads, ADS.P1)
+meetwaarden = [0]*100;
+meetwaardenstroom = [0]*100;
+def stroom_meten():
+    
+ for x in range(99):
+  
+  meetwaardenstroom.insert(x, chan.voltage);
+  
+  maxWaardeStroom = meetwaardenstroom[0]
+ for x in range(99):
+     if(maxWaardeStroom < meetwaardenstroom[x]):
+         
+         maxWaardeStroom = meetwaardenstroom[x];
+ Timer(1, stroom_meten).start()
+ 
+ topwaarde_werkelijkStroom = (maxWaardeStroom - 1.671)*10;
+ print(topwaarde_werkelijkStroom, "A")
+    
+    
+    
 
 def spanning_meten():
 
- for x in range(100): #array vullen met meetwaarden dmv for loop
-  print(chan.value)
+ for x in range(99): #array vullen met meetwaarden dmv for loop
     
-  meetwaarden.insert(x, chan.value); #omrekening van analoge waarde naar spanning (dus *3.3V)
+  meetwaarden.insert(x, chan.voltage); #omrekening van analoge waarde naar spanning (dus *3.3V)
     
   maxWaarde = meetwaarden[0]; #de init waarde van max is de eerste plek in de array
    
- for x in range(100):#De for loop doorloopt de volledige array
+ for x in range(99):#De for loop doorloopt de volledige array
     
     if(maxWaarde < meetwaarden[x]): #als de volgende array kleiner is dan max was dan krijgt max een nieuwe waarde.
         
@@ -50,7 +68,9 @@ def spanning_meten():
 
  json_string = json.dumps(data)
  print(json_string)
- print("Topwaarde spanning = %1.3fV  Topwaarde werkelijk = %1.3fV    Effectief gemeten spanning = %1.3fV\n", max, topwaarde_werkelijk, effectiefgemeten_spanning);
+ print(maxWaarde, topwaarde_werkelijk, effectiefgemeten_spanning);
 
+
+    
 spanning_meten()
- 
+stroom_meten()
