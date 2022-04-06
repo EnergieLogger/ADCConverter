@@ -17,60 +17,52 @@ chan = AnalogIn(ads, ADS.P0)
 chanstroom = AnalogIn(ads, ADS.P1)
 meetwaarden = [0]*100;
 meetwaardenstroom = [0]*100;
-def stroom_meten():
-    
- for x in range(99):
-  
-  meetwaardenstroom.insert(x, chan.voltage);
-  
-  maxWaardeStroom = meetwaardenstroom[0]
- for x in range(99):
-     if(maxWaardeStroom < meetwaardenstroom[x]):
-         
-         maxWaardeStroom = meetwaardenstroom[x];
- Timer(1, stroom_meten).start()
- 
- topwaarde_werkelijkStroom = (maxWaardeStroom - 1.671)*10;
- print(topwaarde_werkelijkStroom, "A")
-    
-    
-    
-
-def spanning_meten():
+indexWaarde = 0;
+indexWaardeS = 0;
+def meten():
 
  for x in range(99): #array vullen met meetwaarden dmv for loop
-    
+
   meetwaarden.insert(x, chan.voltage); #omrekening van analoge waarde naar spanning (dus *3.3V)
-    
+
   maxWaarde = meetwaarden[0]; #de init waarde van max is de eerste plek in de array
-   
+
+  meetwaardenstroom.insert(x, chanstroom.voltage);
+
+  maxWaardeStroom = meetwaardenstroom[0]
+
  for x in range(99):#De for loop doorloopt de volledige array
-    
+
     if(maxWaarde < meetwaarden[x]): #als de volgende array kleiner is dan max was dan krijgt max een nieuwe waarde.
-        
+
         maxWaarde = meetwaarden[x];
- Timer(1, spanning_meten).start() #iedere seconde wordt de functie voor het meten van de spanning aangeroepen
+        indexWaarde = x;
+    if(maxWaardeStroom < meetwaardenstroom[x]):
+        indexWaardeS = x;
+        maxWaardeStroom = meetwaardenstroom[x];
+ Timer(1, meten).start() #iedere seconde wordt de functie voor het meten van de spanning aangeroepen
 
-
-
-
-            
-        
-    
+ topwaarde_werkelijkStroom = (maxWaardeStroom - 1.671)*10;
  topwaarde_werkelijk = maxWaarde *144.4; #de werkelijke waarde van de spanning is de max spanning keer een versterkingsfactor
  effectiefgemeten_spanning = topwaarde_werkelijk*0.707; #om van topwaarde naar effectief te gaan wordt vermenigvuldigt met 0,5wortel2 (0,7071)
  data = {
 
      'Topwaarde spanning': maxWaarde,
      'Topwaarde werkelijk': topwaarde_werkelijk,
-     'Effectief gemeten spanning': effectiefgemeten_spanning 
+     'Effectief gemeten spanning': effectiefgemeten_spanning,
+     'Stroom': topwaarde_werkelijkStroom
  }
-
  json_string = json.dumps(data)
- print(json_string)
- print(maxWaarde, topwaarde_werkelijk, effectiefgemeten_spanning);
+ with open('json_data.json', 'w') as outfile:
+    json.dump(json_string, outfile)
+ with open('json_data.json') as json_file:
+    data = json.load(json_file)
+    print(data)
+ print("\n",maxWaarde,"\n", topwaarde_werkelijk,"\n", effectiefgemeten_spanning);
+ print(topwaarde_werkelijkStroom, "A")
+ print("\nde Index waarde van de spanning bevindt zich op positie:", indexWaarde)
+ print("\nde Index waarde van de stroom bevindt zich op positie:", indexWaardeS)
 
 
-    
-spanning_meten()
-stroom_meten()
+meten()
+
