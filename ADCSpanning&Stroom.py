@@ -68,8 +68,12 @@ def meten():
  else:
    cosphiWerkelijk = cosphi;
    
- vermogen = round((effectiefgemeten_spanning * effectiefgemeten_stroom * cosphiWerkelijk),1);
-
+ effectiefVermogen = round(((effectiefgemeten_spanning * effectiefgemeten_stroom * cosphiWerkelijk)/1000),1);
+ if(topwaarde_werkelijkStroom > 0.01):
+   initTime = time.time() /3600;
+   
+ verbruik = effectiefVermogen * initTime;
+ Timer(1, meten).start()
  data = {
 
      'Topwaarde spanning': maxWaarde,
@@ -88,5 +92,6 @@ def meten():
 #print("\nde Index waarde van de spanning bevindt zich op positie:", indexWaarde)
 #print("\nde Index waarde van de stroom bevindt zich op positie:", indexWaardeS)
  print("\nde Cosphi is:", cosphi)
- print("\nVermogen: ", vermogen, " W")
+ print("\nVermogen: ", effectiefVermogen, " kW")
+ print("\nVerbruik: ", verbruik, " kWh")
 meten();
