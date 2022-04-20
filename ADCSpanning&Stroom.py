@@ -28,11 +28,13 @@ cosphiA = 0;
 cosphi = 0;
 cosphitotaal =0;
 cosphiWerkelijk =0;
+verbruiktotaal = 0;
 ads.data_rate = rate
 def meten():
  global indexWaarde;
  global indexWaardeS;
- global cosphiWerkelijk
+ global cosphiWerkelijk;
+ global verbruiktotaal;
  for x in range(8): #array vullen met meetwaarden dmv for loop
 
   meetwaarden.insert(x, chan.voltage); #omrekening van analoge waarde naar spanning (dus *3.3V)
@@ -70,9 +72,11 @@ def meten():
    
  effectiefVermogen = round(((effectiefgemeten_spanning * effectiefgemeten_stroom * cosphiWerkelijk)/1000),1);
  if(topwaarde_werkelijkStroom > 0.01):
-   initTime = time.time() /3600;
+   verbruik = effectiefVermogen
+
+ verbruiktotaal = verbruiktotaal + verbruik;
    
- verbruik = effectiefVermogen * initTime;
+ 
  Timer(1, meten).start()
  data = {
 
@@ -93,5 +97,5 @@ def meten():
 #print("\nde Index waarde van de stroom bevindt zich op positie:", indexWaardeS)
  print("\nde Cosphi is:", cosphi)
  print("\nVermogen: ", effectiefVermogen, " kW")
- print("\nVerbruik: ", verbruik, " kWh")
+ print("\nVerbruik: ", verbruiktotaal, " kWh")
 meten();
