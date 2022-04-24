@@ -30,11 +30,13 @@ cosphitotaal =0;
 cosphiWerkelijk =0;
 verbruiktotaal = 0;
 ads.data_rate = rate
+verbruik = 0;
 def meten():
  global indexWaarde;
  global indexWaardeS;
  global cosphiWerkelijk;
  global verbruiktotaal;
+ global verbruik;
  for x in range(8): #array vullen met meetwaarden dmv for loop
 
   meetwaarden.insert(x, chan.voltage); #omrekening van analoge waarde naar spanning (dus *3.3V)
@@ -58,7 +60,7 @@ def meten():
 
  topwaarde_werkelijkStroom = round((maxWaardeStroom - 1.665)*10,3);
  topwaarde_werkelijk =round(( maxWaarde *144.4),2); #de werkelijke waarde van de spanning is de max spanning keer een versterkingsfactor
- effectiefgemeten_spanning =round(( topwaarde_werkelijk*0.707),3); #om van topwaarde naar effectief te gaan wordt vermenigvuldigt met 0,5wortel2 (0,7071)
+ effectiefgemeten_spanning = round((topwaarde_werkelijk*0.707),3); #om van topwaarde naar effectief te gaan wordt vermenigvuldigt met 0,5wortel2 (0,7071)
  effectiefgemeten_stroom = round((topwaarde_werkelijkStroom*0.707),3);
  cosphiU = indexWaarde*(1/475)
  cosphiA = indexWaardeS*(1/475)
@@ -69,33 +71,42 @@ def meten():
    cosphiWerkelijk = 1 - cosphi;
  else:
    cosphiWerkelijk = cosphi;
-   
- effectiefVermogen = round(((effectiefgemeten_spanning * effectiefgemeten_stroom * cosphiWerkelijk)/1000),1);
+ Timer(1, meten).start()  
+ effectiefVermogen = round(((effectiefgemeten_spanning * effectiefgemeten_stroom * cosphiWerkelijk)),1);
+ effectiefVermogenTot =  (effectiefVermogen/1000);
  if(topwaarde_werkelijkStroom > 0.01):
-   verbruik = effectiefVermogen
+   verbruik = effectiefVermogenTot
 
  verbruiktotaal = verbruiktotaal + verbruik;
-   
- 
- Timer(1, meten).start()
+
+
  data = {
 
      'Topwaarde spanning': maxWaarde,
      'Topwaarde werkelijk': topwaarde_werkelijk,
      'Effectief gemeten spanning': effectiefgemeten_spanning,
-     'Stroom': topwaarde_werkelijkStroom
+     'Stroom': topwaarde_werkelijkStroom,
+     'Verbruik': verbruiktotaal,
+     'Vermogen': effectiefVermogen,
+     'Tijd': time.time()
  }
- json_string = json.dumps(data)
- with open('json_data.json', 'w') as outfile:
-    json.dump(json_string, outfile)
- with open('json_data.json') as json_file:
-    data = json.load(json_file)
-   # print(data)
+ currdata = []
+ with open('/var/www/html/assets/json_data.json', 'r') as json_file:
+  try:
+    data1 = json.load(json_file)
+    currdata = data1["Data"]
+  except:
+    print()
+
+ currdata.append(data)
+ #json_file["data"].append
+ with open('/var/www/html/assets/json_data.json', 'w') as json_file:
+    json_file.write(json.dumps({"Data": currdata}))
  print("\n",maxWaarde,"\n", topwaarde_werkelijk,"\n", effectiefgemeten_spanning);
  print(topwaarde_werkelijkStroom, "A")
 #print("\nde Index waarde van de spanning bevindt zich op positie:", indexWaarde)
 #print("\nde Index waarde van de stroom bevindt zich op positie:", indexWaardeS)
- print("\nde Cosphi is:", cosphi)
- print("\nVermogen: ", effectiefVermogen, " kW")
+ print("\nde Cosphi is:", cosphiWerkelijk)
+ print("\nVermogen: ", effectiefVermogenTot, " kW")
  print("\nVerbruik: ", verbruiktotaal, " kWh")
 meten();
