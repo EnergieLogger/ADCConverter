@@ -7,6 +7,15 @@ from threading import Timer
 import json
 import math
 
+import RPi.GPIO as GPIO
+from OLED import display_info
+from OLED import change_state
+
+# Zet de pinmode op Broadcom SOC.
+GPIO.setmode(GPIO.BCM)
+# Zet waarschuwingen uit.
+GPIO.setwarnings(False)
+
 # Create the I2C bus
 i2c = busio.I2C(board.SCL, board.SDA)
 rate = 860
@@ -31,12 +40,23 @@ cosphiWerkelijk =0;
 verbruiktotaal = 0;
 ads.data_rate = rate
 verbruik = 0;
+
+state = 1
+
+# Zet de GPIO pin als ingang.
+GPIO.setup(22, GPIO.IN,  pull_up_down=GPIO.PUD_DOWN)
+# Gebruik een interrupt, wanneer actief run subroutinne 'gedrukt'
+GPIO.add_event_detect(22, GPIO.RISING, callback=change_state, bouncetime=200)
+
+
 def meten():
  global indexWaarde;
  global indexWaardeS;
  global cosphiWerkelijk;
  global verbruiktotaal;
  global verbruik;
+ global state
+ 
  for x in range(16): #array vullen met meetwaarden dmv for loop
 
   meetwaarden.insert(x, chan.voltage); #omrekening van analoge waarde naar spanning (dus *3.3V)
@@ -109,4 +129,6 @@ def meten():
  print("\nde Cosphi is:", cosphiWerkelijk)
  print("\nVermogen: ", effectiefVermogenTot, " kW")
  print("\nVerbruik: ", verbruiktotaal, " kWh")
+ display_info(effectiefgemeten_spanning,topwaarde_werkelijkStroom, effectiefVermogen, cosphiWerkelijk, verbruiktotaal, state)
+
 meten();
