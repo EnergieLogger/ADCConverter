@@ -9,7 +9,7 @@ import math
 
 # Create the I2C bus
 i2c = busio.I2C(board.SCL, board.SDA)
-rate = 475
+rate = 860
 
 
 # Create the ADC object using the I2C bus
@@ -37,7 +37,7 @@ def meten():
  global cosphiWerkelijk;
  global verbruiktotaal;
  global verbruik;
- for x in range(8): #array vullen met meetwaarden dmv for loop
+ for x in range(16): #array vullen met meetwaarden dmv for loop
 
   meetwaarden.insert(x, chan.voltage); #omrekening van analoge waarde naar spanning (dus *3.3V)
 
@@ -47,7 +47,7 @@ def meten():
 
   maxWaardeStroom = meetwaardenstroom[0]
 
- for x in range(8):#De for loop doorloopt de volledige array
+ for x in range(16):#De for loop doorloopt de volledige array
 
     if(maxWaarde < meetwaarden[x]): #als de volgende array kleiner is dan max was dan krijgt max een nieuwe waarde.
 
@@ -64,7 +64,7 @@ def meten():
  effectiefgemeten_stroom = round((topwaarde_werkelijkStroom*0.707),3);
  cosphiU = indexWaarde*(1/475)
  cosphiA = indexWaardeS*(1/475)
- cosphitotaal = cosphiU - cosphiA
+ cosphitotaal = (cosphiU - cosphiA)/0.02
  cosphiC = cosphitotaal *360
  cosphi =abs(round( math.cos(cosphiC),2))
  if (cosphi < 0.2):
