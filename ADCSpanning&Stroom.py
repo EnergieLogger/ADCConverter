@@ -108,7 +108,8 @@ def meten():
      'Stroom': topwaarde_werkelijkStroom,
      'Verbruik': verbruiktotaal,
      'Vermogen': effectiefVermogen,
-     'Tijd': time.time()
+     'Tijd': time.time(),
+     'CosphiWaarde': cosphiWerkelijk
  }
  currdata = []
  with open('/var/www/html/assets/json_data.json', 'r') as json_file:
