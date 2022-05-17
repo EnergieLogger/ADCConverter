@@ -48,14 +48,20 @@ GPIO.setup(22, GPIO.IN,  pull_up_down=GPIO.PUD_DOWN)
 # Gebruik een interrupt, wanneer actief run subroutinne 'gedrukt'
 GPIO.add_event_detect(22, GPIO.RISING, callback=change_state, bouncetime=200)
 
+def stateveranderen():
+ global state
 
+ if(state ==1):
+     state = 2
+ else:
+   state = 1
+ Timer(3, stateveranderen).start()
 def meten():
  global indexWaarde;
  global indexWaardeS;
  global cosphiWerkelijk;
  global verbruiktotaal;
  global verbruik;
- global state
  
  for x in range(16): #array vullen met meetwaarden dmv for loop
 
@@ -80,8 +86,8 @@ def meten():
 
  topwaarde_werkelijkStroom = round((maxWaardeStroom - 1.665)*10,3);
  topwaarde_werkelijk =round(( maxWaarde *144.4),2); #de werkelijke waarde van de spanning is de max spanning keer een versterkingsfactor
- effectiefgemeten_spanning = round((topwaarde_werkelijk*0.707),3); #om van topwaarde naar effectief te gaan wordt vermenigvuldigt met 0,5wortel2 (0,7071)
- effectiefgemeten_stroom = round((topwaarde_werkelijkStroom*0.707),3);
+ effectiefgemeten_spanning = round((topwaarde_werkelijk*0.707),2); #om van topwaarde naar effectief te gaan wordt vermenigvuldigt met 0,5wortel2 (0,7071)
+ effectiefgemeten_stroom = round((topwaarde_werkelijkStroom*0.707),2);
  cosphiU = indexWaarde*(1/475)
  cosphiA = indexWaardeS*(1/475)
  cosphitotaal = (cosphiU - cosphiA)/0.02
@@ -93,11 +99,13 @@ def meten():
    cosphiWerkelijk = cosphi;
  Timer(1, meten).start()  
  effectiefVermogen = round(((effectiefgemeten_spanning * effectiefgemeten_stroom * cosphiWerkelijk)),1);
- effectiefVermogenTot =  (effectiefVermogen/1000);
+ effectiefVermogenTot =  round(((effectiefVermogen/1000)),2);
  if(topwaarde_werkelijkStroom > 0.01):
    verbruik = effectiefVermogenTot
 
  verbruiktotaal = verbruiktotaal + verbruik;
+
+
 
 
  data = {
@@ -109,7 +117,7 @@ def meten():
      'Verbruik': verbruiktotaal,
      'Vermogen': effectiefVermogen,
      'Tijd': time.time(),
-     'CosphiWaarde': cosphiWerkelijk
+     'CosPhi': cosphiWerkelijk
  }
  currdata = []
  with open('/var/www/html/assets/json_data.json', 'r') as json_file:
@@ -130,6 +138,12 @@ def meten():
  print("\nde Cosphi is:", cosphiWerkelijk)
  print("\nVermogen: ", effectiefVermogenTot, " kW")
  print("\nVerbruik: ", verbruiktotaal, " kWh")
+
+
  display_info(effectiefgemeten_spanning,topwaarde_werkelijkStroom, effectiefVermogen, cosphiWerkelijk, verbruiktotaal, state)
 
+
+
 meten();
+stateveranderen();  
+
