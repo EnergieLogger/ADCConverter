@@ -93,21 +93,23 @@ def meten():
  cosphitotaal = (cosphiU - cosphiA)/0.02
  cosphiC = cosphitotaal *360
  cosphi =abs(round( math.cos(cosphiC),2))
- if (cosphi < 0.2):
+ if (cosphi < 0.4): # Wanneer de CosPhi lager is dan 0.4 dan wordt deze gecorrigeerd
    cosphiWerkelijk = 1 - cosphi;
  else:
    cosphiWerkelijk = cosphi;
  Timer(1, meten).start()  
  effectiefVermogen = round(((effectiefgemeten_spanning * effectiefgemeten_stroom * cosphiWerkelijk)),1);
  effectiefVermogenTot =  round(((effectiefVermogen/1000)),2);
- if(topwaarde_werkelijkStroom > 0.01):
+ if(topwaarde_werkelijkStroom > 0.1): #Wanneer een stroom gemeten wordt van meer dan 100mA dan wordt er verbruik opgeslagen
    verbruik = effectiefVermogenTot
 
- verbruiktotaal = verbruiktotaal + verbruik;
+ verbruiktotaal = round((verbruiktotaal + verbruik),2);
+ Q = round((effectiefgemeten_spanning*effectiefgemeten_stroom* abs(round(math.sin(cosphiC),2)))); # Blindvermogen berekenen
+ S = round((effectiefgemeten_spanning * effectiefgemeten_stroom),2); # Schijnbaar vermogen berekenen
 
 
 
-
+#Gegevens die opgeslagen worden in een JSON-bestand
  data = {
 
      'Topwaarde spanning': maxWaarde,
@@ -115,32 +117,31 @@ def meten():
      'Effectief gemeten spanning': effectiefgemeten_spanning,
      'Stroom': topwaarde_werkelijkStroom,
      'Verbruik': verbruiktotaal,
-     'Vermogen': effectiefVermogen,
+     'Vermogen': effectiefVermogenTot,
      'Tijd': time.time(),
      'CosPhi': cosphiWerkelijk
  }
- currdata = []
- with open('/var/www/html/assets/json_data.json', 'r') as json_file:
+ currdata = [] 
+ with open('/var/www/html/assets/json_data.json', 'r') as json_file: # JSON-bestand openen
   try:
     data1 = json.load(json_file)
     currdata = data1["Data"]
   except:
     print()
 
- currdata.append(data)
- #json_file["data"].append
+ currdata.append(data) #Data toevoegen aan array
  with open('/var/www/html/assets/json_data.json', 'w') as json_file:
-    json_file.write(json.dumps({"Data": currdata}))
+    json_file.write(json.dumps({"Data": currdata})) # Array toevoegen aan JSON bestand
  print("\n",maxWaarde,"\n", topwaarde_werkelijk,"\n", effectiefgemeten_spanning);
  print(topwaarde_werkelijkStroom, "A")
-#print("\nde Index waarde van de spanning bevindt zich op positie:", indexWaarde)
-#print("\nde Index waarde van de stroom bevindt zich op positie:", indexWaardeS)
+ print("\nde Index waarde van de spanning bevindt zich op positie:", indexWaarde)
+ print("\nde Index waarde van de stroom bevindt zich op positie:", indexWaardeS)
  print("\nde Cosphi is:", cosphiWerkelijk)
  print("\nVermogen: ", effectiefVermogenTot, " kW")
  print("\nVerbruik: ", verbruiktotaal, " kWh")
 
 
- display_info(effectiefgemeten_spanning,topwaarde_werkelijkStroom, effectiefVermogen, cosphiWerkelijk, verbruiktotaal, state)
+ display_info(effectiefgemeten_spanning,topwaarde_werkelijkStroom, effectiefVermogenTot, cosphiWerkelijk, verbruiktotaal, Q, S, state) #Gegevens overbrengen naar display
 
 
 
